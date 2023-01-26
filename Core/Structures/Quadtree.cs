@@ -3,24 +3,17 @@ using SFML.System;
 
 namespace QuadTreeCollisions.Core.Structures
 {
-    public class QuadTreeEntity 
-    {
-        public QuadTreeEntity(Vector2f position, Vector2f dimensions, object obj)
-        {
-            rectangle = new Rectangle(position, dimensions);
-            Obj = obj;
-        }
-
-        public object Obj { get; set; }
-        public Rectangle rectangle { get; set; }
-    }
-
     public class Rectangle
     {
         public Rectangle(Vector2f position, Vector2f dimensions)
         {
             Position = position;
             Dimensions = dimensions;
+        }
+
+        public Rectangle() 
+        {
+            
         }
 
         public bool Intersects(Rectangle other)
@@ -40,20 +33,36 @@ namespace QuadTreeCollisions.Core.Structures
             return true;
         }
 
-        public Vector2f Dimensions { get; set; }
-        public Vector2f Position { get; set; }
+        public Vector2f Dimensions { get; set; } = new Vector2f(0, 0);
+        public Vector2f Position { get; set; } = new Vector2f(0, 0);
     }
+
+    public class QuadTreePool
+    {
+        public bool Available()
+        {
+            return available.Count > 0;
+        }
+
+        public Quadtree Dequeue()
+        {
+            return available.Dequeue();
+        }
+
+        public void Enqueue(Quadtree tree)
+        {
+            available.Enqueue(tree);
+        }
+
+        private Queue<Quadtree> available = new Queue<Quadtree>();
+    };
 
     public class Quadtree 
     {
-        private static bool render = true;
-        private static bool setupOnce = false;
-        private static int visualizationThickness = 1;
-
-        public Quadtree(Rectangle boundary, int capacity)
+        public Quadtree(Rectangle boundary, int capacity, int depth)
         {
             Capacity = capacity;
-            Boundary = boundary;
+            rectangle = boundary;
 
             if (!setupOnce)
             {
@@ -62,28 +71,48 @@ namespace QuadTreeCollisions.Core.Structures
                 shape.OutlineThickness = visualizationThickness;
                 setupOnce = true;
             }
+
+            this.depth = depth;
         }
+
+        private static QuadTreePool pool = new QuadTreePool();
 
         public void clear()
         {
             entities.Clear();
 
-            NW = null;
-            NE = null;
-            SW = null;
-            SE = null;
+            if (NW != null)
+            {
+                NW.clear();
+                NE.clear();
+                SW.clear();
+                SE.clear();
+
+
+                pool.Enqueue(NW);
+                NW = null;
+
+                pool.Enqueue(NE);
+                NE = null;
+
+                pool.Enqueue(SW);
+                SW = null;
+
+                pool.Enqueue(SE);
+                SE = null;
+            }
         }
 
-        public bool insert(QuadTreeEntity entity)
+        public bool insert(WorldObject worldObject)
         {
-            if (!Boundary.Intersects(entity.rectangle))
+            if (!rectangle.Intersects(worldObject.rectangle))
             {
                 return false;
             }
 
-            if (entities.Count < Capacity)
+            if (entities.Count < Capacity || depth == maxDepth)
             {
-                entities.Add(entity);
+                entities.Add(worldObject);
                 return true;
             }
 
@@ -93,10 +122,10 @@ namespace QuadTreeCollisions.Core.Structures
                 subdivide();
             }
 
-            bool insertedNW = NW.insert(entity);
-            bool insertedNE = NE.insert(entity);
-            bool insertedSW = SW.insert(entity);
-            bool insertedSE = SE.insert(entity);
+            bool insertedNW = NW.insert(worldObject);
+            bool insertedNE = NE.insert(worldObject);
+            bool insertedSW = SW.insert(worldObject);
+            bool insertedSE = SE.insert(worldObject);
 
             return insertedNW || insertedNE || insertedSW || insertedSE;
         }
@@ -105,8 +134,8 @@ namespace QuadTreeCollisions.Core.Structures
         {
             if (render)
             {
-                shape.Size = new Vector2f(Boundary.Dimensions.X - 2 * visualizationThickness, Boundary.Dimensions.Y - 2 * visualizationThickness);
-                shape.Position = new Vector2f(Boundary.Position.X + visualizationThickness, Boundary.Position.Y + visualizationThickness);
+                shape.Size = new Vector2f(rectangle.Dimensions.X - 2 * visualizationThickness, rectangle.Dimensions.Y - 2 * visualizationThickness);
+                shape.Position = new Vector2f(rectangle.Position.X + visualizationThickness, rectangle.Position.Y + visualizationThickness);
                 window.Draw(shape);
 
                 if (this.NW != null)
@@ -118,28 +147,110 @@ namespace QuadTreeCollisions.Core.Structures
                 }
             }
         }
+
+        private IList<WorldObject> intersections = new List<WorldObject>();
+
+        public IList<WorldObject> findIntersections(Rectangle rectangle)
+        {
+            intersections.Clear();
+            findIntersectionsHelper(intersections, rectangle);
+            return intersections;
+        }
+
+        private void findIntersectionsHelper(IList<WorldObject> intersections, Rectangle rectangle)
+        {
+            if (NW != null)
+            {
+                NW.findIntersectionsHelper(intersections, rectangle);
+                NE.findIntersectionsHelper(intersections, rectangle);
+                SW.findIntersectionsHelper(intersections, rectangle);
+                SE.findIntersectionsHelper(intersections, rectangle);
+                return;
+            }
+
+            foreach (WorldObject contained in entities)
+            {
+                if (rectangle.Intersects(contained.rectangle))
+                {
+                    intersections.Add(contained);
+                }
+            }
+        }
         
         private void subdivide()
         {
-            float x = Boundary.Position.X;
-            float y = Boundary.Position.Y;
-            float w = Boundary.Dimensions.X;
-            float h = Boundary.Dimensions.Y;
+            float x = rectangle.Position.X;
+            float y = rectangle.Position.Y;
+            float w = rectangle.Dimensions.X;
+            float h = rectangle.Dimensions.Y;
 
-            NW = new Quadtree(new Rectangle(new Vector2f(x, y), new Vector2f(w / 2, h / 2)), Capacity);
-            NE = new Quadtree(new Rectangle(new Vector2f(x + (w/2), y), new Vector2f(w / 2, h / 2)), Capacity);
-            SW = new Quadtree(new Rectangle(new Vector2f(x, y + (h/2)), new Vector2f(w / 2, h / 2)), Capacity);
-            SE = new Quadtree(new Rectangle(new Vector2f(x + (w / 2), y + (h / 2)), new Vector2f(w / 2, h / 2)), Capacity);
+            if (pool.Available())
+            {
+                NW = pool.Dequeue();
+                NW.rectangle.Position = new Vector2f(x, y);
+                NW.rectangle.Dimensions = new Vector2f(w / 2, h / 2);
+                NW.Capacity = Capacity;
+                NW.depth = depth + 1;
+            }
+            else
+            {
+                NW = new Quadtree(new Rectangle(new Vector2f(x, y), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
+            }
+
+            if (pool.Available())
+            {
+                NE = pool.Dequeue();
+                NE.rectangle.Position = new Vector2f(x + (w / 2), y);
+                NE.rectangle.Dimensions = new Vector2f(w / 2, h / 2);
+                NE.Capacity = Capacity;
+                NE.depth = depth + 1;
+            }
+            else
+            {
+                NE = new Quadtree(new Rectangle(new Vector2f(x + (w / 2), y), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
+            }
+
+            if (pool.Available())
+            {
+                SW = pool.Dequeue();
+                SW.rectangle.Position = new Vector2f(x, y + (h / 2));
+                SW.rectangle.Dimensions = new Vector2f(w / 2, h / 2);
+                SW.Capacity = Capacity;
+                SW.depth = depth + 1;
+            }
+            else
+            {
+                SW = new Quadtree(new Rectangle(new Vector2f(x, y + (h/2)), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
+            }
+
+            if (pool.Available())
+            {
+                SE = pool.Dequeue();
+                SE.rectangle.Position = new Vector2f(x + (w / 2), y + (h / 2));
+                SE.rectangle.Dimensions = new Vector2f(w / 2, h / 2);
+                SE.Capacity = Capacity;
+                SE.depth = depth + 1;
+            }
+            else
+            {
+                SE = new Quadtree(new Rectangle(new Vector2f(x + (w / 2), y + (h / 2)), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
+            }
         }
 
         private Quadtree? NW = null;
         private Quadtree? NE = null;
         private Quadtree? SW = null;
         private Quadtree? SE = null;
+        protected int depth = 0;
 
-        private IList<QuadTreeEntity> entities = new List<QuadTreeEntity>();
-        public Rectangle Boundary { get; private set; }
+        private IList<WorldObject> entities = new List<WorldObject>();
+        public Rectangle rectangle { get; private set; }
         public int Capacity { get; private set; }
+
         private static RectangleShape shape = new RectangleShape();
+        private static bool render = true;
+        private static bool setupOnce = false;
+        private static int visualizationThickness = 1;
+        private static int maxDepth = 10;
     }
 }

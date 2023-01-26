@@ -3,7 +3,7 @@ using SFML.Graphics;
 
 namespace QuadTreeCollisions.Core
 {
-    public class Entity : IDrawable, IUpdateable
+    public class Entity : WorldObject, IDrawable, IUpdateable
     {
         public Entity()
         {
