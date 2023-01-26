@@ -50,28 +50,27 @@ namespace QuadTreeCollisions.Core
 
         private void Step()
         {
-            float deltaTime = frameClock.ElapsedTime.AsSeconds();
-            foreach (IUpdateable updateable in Registry.Instance.updateables)
-                updateable.Update(deltaTime);
+            for (int i = 0; i < Registry.Instance.updateables.Count; i++)
+                Registry.Instance.updateables[i].Update(frameClock.ElapsedTime.AsSeconds());
         }
 
         private void Render()
         {
             window.Draw(background);
-            foreach (IDrawable drawable in Registry.Instance.drawables)
-                drawable.Draw(window);
+            for (int i = 0; i < Registry.Instance.drawables.Count; i++)
+                Registry.Instance.drawables[i].Draw(window);
         }
 
         private void KeyPressed(object? sender, SFML.Window.KeyEventArgs e)
         {
-            foreach (KeyboardeventListener listener in Registry.Instance.keyboardEventListeners)
-                listener.OnKeyPressed(e);
+            for (int i = 0; i < Registry.Instance.keyboardEventListeners.Count; i++)
+                Registry.Instance.keyboardEventListeners[i].OnKeyPressed(e);
         }
 
         private void KeyReleased(object? sender, SFML.Window.KeyEventArgs e)
-        {
-            foreach (KeyboardeventListener listener in Registry.Instance.keyboardEventListeners)
-                listener.OnKeyReleased(e);
+        { 
+            for (int i = 0; i<Registry.Instance.keyboardEventListeners.Count; i++)
+                Registry.Instance.keyboardEventListeners[i].OnKeyReleased(e);
         }
         private void MouseMoved(object? sender, MouseMoveEventArgs e)
         {

@@ -46,13 +46,21 @@ namespace QuadTreeCollisions.Application
                 tree.insert(cube);
             }
 
-            /*Rectangle rect = new Rectangle(new Vector2f(0, 0), new Vector2f(0, 0));
+            Rectangle rect = new Rectangle(new Vector2f(0, 0), new Vector2f(0, 0));
+
+            destroyedCubes.Clear();
             foreach (Cube cube in cubes)
             {
-                rect.Position = cube.shape.Position;
-                rect.Dimensions = cube.shape.Size;
-                IList<QuadTreeEntity> intersectedWith = tree.findIntersections(rect);
-            }*/
+                IList<WorldObject> intersectedWith = tree.findIntersections(cube.rectangle);
+                destroyedCubes.AddRange(intersectedWith);
+            }
+
+            foreach (Cube cube in destroyedCubes)
+            {
+                cubes.Remove(cube);
+                Registry.Instance.updateables.Remove(cube);
+                Registry.Instance.drawables.Remove(cube);
+            }
         }
 
         public void Draw(RenderWindow window)
@@ -62,17 +70,33 @@ namespace QuadTreeCollisions.Application
 
         public override void MouseButtonPressed(MouseButtonEventArgs e)
         {
-            for (int i = 0; i < 100; i++)
+            Vector2f dimensions = new Vector2f(8, 8);
+
+            if (e.Button == SFML.Window.Mouse.Button.Left)
             {
-                Vector2f dimensions = new Vector2f(8, 8);
-                Cube myCube = new Cube();
-                myCube.rectangle.Position = Registry.Instance.mouse.lastPosition - (dimensions / 2);
-                myCube.rectangle.Dimensions = dimensions;
-                cubes.Add(myCube);
+                Cube cube = new Cube();
+                cube.rectangle.Dimensions = dimensions;
+                cube.rectangle.Position = Registry.Instance.mouse.lastPosition - (dimensions / 2);
+                cubes.Add(cube);
+            }
+            else if (e.Button == SFML.Window.Mouse.Button.Right)
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    Cube cube = new Cube();
+                    cube.rectangle.Position = Registry.Instance.mouse.lastPosition - (dimensions / 2);
+                    cube.rectangle.Position = new Vector2f(cube.rectangle.Position.X + random.Next(-100, 100), cube.rectangle.Position.Y + random.Next(-100, 100));
+                    cube.rectangle.Dimensions = dimensions;
+                    cubes.Add(cube);
+                }
             }
         }
 
+        private Random random = new Random();
+
         private IList<Cube> cubes = new List<Cube>(100);
+        private List<WorldObject> destroyedCubes = new List<WorldObject>();
+        
 
         private WindowController? windowController;
         private CubeSpawnerController? cubeSpawnerController;

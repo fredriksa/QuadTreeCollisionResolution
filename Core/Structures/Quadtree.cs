@@ -112,10 +112,11 @@ namespace QuadTreeCollisions.Core.Structures
 
             foreach (WorldObject contained in worldObjects)
             {
+                if (rectangle == contained.rectangle)
+                    continue;
+
                 if (rectangle.Intersects(contained.rectangle))
-                {
                     intersections.Add(contained);
-                }
             }
         }
 
