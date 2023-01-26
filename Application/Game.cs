@@ -52,11 +52,13 @@ namespace QuadTreeCollisions.Application
             foreach (Cube cube in cubes)
             {
                 IList<WorldObject> intersectedWith = tree.findIntersections(cube.rectangle);
-                destroyedCubes.AddRange(intersectedWith);
+                foreach (WorldObject worldObject in intersectedWith)
+                    destroyedCubes.Add(worldObject);
             }
 
             foreach (Cube cube in destroyedCubes)
             {
+                new Explosion(cube.rectangle.Position);
                 cubes.Remove(cube);
                 Registry.Instance.updateables.Remove(cube);
                 Registry.Instance.drawables.Remove(cube);
@@ -95,7 +97,7 @@ namespace QuadTreeCollisions.Application
         private Random random = new Random();
 
         private IList<Cube> cubes = new List<Cube>(100);
-        private List<WorldObject> destroyedCubes = new List<WorldObject>();
+        private HashSet<WorldObject> destroyedCubes = new HashSet<WorldObject>();
         
 
         private WindowController? windowController;
