@@ -39,8 +39,6 @@ namespace QuadTreeCollisions.Application.Entities
         
         public override void Update(float deltaTimeSeconds) 
         {
-            return;
-
             Vector2f toMove = (direction * speed * deltaTimeSeconds);
 
             if (rectangle.Position.X + toMove.X < 0)

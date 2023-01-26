@@ -62,7 +62,7 @@ namespace QuadTreeCollisions.Application
 
         public override void MouseButtonPressed(MouseButtonEventArgs e)
         {
-            for (int i = 0; i < 1; i++)
+            for (int i = 0; i < 100; i++)
             {
                 Vector2f dimensions = new Vector2f(8, 8);
                 Cube myCube = new Cube();
