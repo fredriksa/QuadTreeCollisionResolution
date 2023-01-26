@@ -17,11 +17,6 @@ namespace QuadTreeCollisions.Application
 {
     public class Game : MouseButtonPressedEventListener, IUpdateable, IDrawable
     {
-        public Game()
-        {
-
-        }
-
         public void Load()
         {
             windowController = new WindowController();
@@ -35,15 +30,24 @@ namespace QuadTreeCollisions.Application
             Registry.Instance.drawables.Add(this);
         }
 
-        private IList<Cube> cubes = new List<Cube>();
-        private IList<QuadTreeEntity> quadTreeEntities = new List<QuadTreeEntity>(500);
-
         public void Update(float deltaTimeSeconds)
         {
             tree.clear();
-            foreach (Cube cube in cubes)
+            for (int i = 0; i < cubes.Count; i++)
             {
-                tree.insert(new QuadTreeEntity(cube.shape.Position, cube.shape.Size, cube));
+                Cube cube = cubes[i];
+                if (i == quadTreeEntities.Count)
+                {
+                    quadTreeEntities.Add(new QuadTreeEntity(cube.shape.Position, cube.shape.Size, cube));
+                }
+                else
+                {
+                    QuadTreeEntity entity = quadTreeEntities[i];
+                    entity.rectangle.Position = cube.shape.Position;
+                    entity.rectangle.Dimensions = cube.shape.Size;
+                    entity.Obj = cube;
+                    tree.insert(entity);
+                }
             }
         }
 
@@ -54,25 +58,22 @@ namespace QuadTreeCollisions.Application
 
         public override void MouseButtonPressed(MouseButtonEventArgs e)
         {
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 20; i++)
             {
                 Vector2f dimensions = new Vector2f(5, 5);
                 Cube myCube = new Cube();
                 myCube.shape.Position = Registry.Instance.mouse.lastPosition - (dimensions / 2);
+                myCube.shape.Size = dimensions;
                 cubes.Add(myCube);
             }
         }
 
-        private void addEntity(Vector2f position, Vector2f dimensions)
-        {
-            Console.Write("Insert Main");
-            bool result = tree.insert(new QuadTreeEntity(position, dimensions, new String("1")));
-            if (!result) Console.WriteLine("Could not insert!");
-        }
+        private IList<Cube> cubes = new List<Cube>(100);
+        private IList<QuadTreeEntity> quadTreeEntities = new List<QuadTreeEntity>(500);
 
-        private WindowController windowController;
-        private CubeSpawnerController cubeSpawnerController;
-        private Wave wave;
-        private Quadtree tree;
+        private WindowController? windowController;
+        private CubeSpawnerController? cubeSpawnerController;
+        private Wave? wave;
+        private Quadtree? tree;
     }
 }

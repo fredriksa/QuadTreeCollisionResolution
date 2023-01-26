@@ -1,14 +1,5 @@
-﻿using QuadTreeCollisions.Core.Interfaces;
-using SFML.Graphics;
+﻿using SFML.Graphics;
 using SFML.System;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Dynamic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace QuadTreeCollisions.Core.Structures
 {
@@ -20,9 +11,8 @@ namespace QuadTreeCollisions.Core.Structures
             Obj = obj;
         }
 
-        public object Obj { get; private set; }
-
-        public Rectangle rectangle { get; private set; }
+        public object Obj { get; set; }
+        public Rectangle rectangle { get; set; }
     }
 
     public class Rectangle
@@ -50,8 +40,8 @@ namespace QuadTreeCollisions.Core.Structures
             return true;
         }
 
-        public Vector2f Dimensions { get; private set; }
-        public Vector2f Position { get; private set; }
+        public Vector2f Dimensions { get; set; }
+        public Vector2f Position { get; set; }
     }
 
     public class Quadtree 
@@ -77,22 +67,23 @@ namespace QuadTreeCollisions.Core.Structures
         public void clear()
         {
             entities.Clear();
-            this.NW = null;
-            this.NE = null;
-            this.SW = null;
-            this.SE = null;
+
+            NW = null;
+            NE = null;
+            SW = null;
+            SE = null;
         }
 
         public bool insert(QuadTreeEntity entity)
         {
-            if (!this.Boundary.Intersects(entity.rectangle))
+            if (!Boundary.Intersects(entity.rectangle))
             {
                 return false;
             }
 
-            if (this.entities.Count < Capacity)
+            if (entities.Count < Capacity)
             {
-                this.entities.Add(entity);
+                entities.Add(entity);
                 return true;
             }
 
@@ -102,10 +93,10 @@ namespace QuadTreeCollisions.Core.Structures
                 subdivide();
             }
 
-            bool insertedNW = this.NW.insert(entity);
-            bool insertedNE = this.NE.insert(entity);
-            bool insertedSW = this.SW.insert(entity);
-            bool insertedSE = this.SE.insert(entity);
+            bool insertedNW = NW.insert(entity);
+            bool insertedNE = NE.insert(entity);
+            bool insertedSW = SW.insert(entity);
+            bool insertedSE = SE.insert(entity);
 
             return insertedNW || insertedNE || insertedSW || insertedSE;
         }
@@ -141,13 +132,12 @@ namespace QuadTreeCollisions.Core.Structures
             SE = new Quadtree(new Rectangle(new Vector2f(x + (w / 2), y + (h / 2)), new Vector2f(w / 2, h / 2)), Capacity);
         }
 
-        private Quadtree NW = null;
-        private Quadtree NE = null;
-        private Quadtree SW = null;
-        private Quadtree SE = null;
+        private Quadtree? NW = null;
+        private Quadtree? NE = null;
+        private Quadtree? SW = null;
+        private Quadtree? SE = null;
 
         private IList<QuadTreeEntity> entities = new List<QuadTreeEntity>();
-
         public Rectangle Boundary { get; private set; }
         public int Capacity { get; private set; }
         private static RectangleShape shape = new RectangleShape();

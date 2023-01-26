@@ -9,7 +9,7 @@ namespace QuadTreeCollisions.Core
         public Window()
         {
             SIZE = new Vector2u(1600, 1000);
-            WINDOW = new RenderWindow(new VideoMode(SIZE.X, SIZE.Y), "Foo");
+            WINDOW = new RenderWindow(new VideoMode(SIZE.X, SIZE.Y), "QuadTreeCollisions");
             WINDOW.Size = SIZE;
         }
 
