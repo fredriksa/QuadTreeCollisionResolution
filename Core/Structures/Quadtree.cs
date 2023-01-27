@@ -1,10 +1,14 @@
 ﻿using QuadTreeCollisions.Core.Entities;
+using QuadTreeCollisions.Core.Interfaces;
+using QuadTreeCollisions.Core.Math;
+using QuadTreeCollisions.Core.Physics;
+using QuadTreeCollisions.Core.Physics.Colliders;
 using SFML.Graphics;
 using SFML.System;
 
 namespace QuadTreeCollisions.Core.Structures
 {
-    public class QuadTree 
+    public class QuadTree : IDrawable
     {
         
         /**
@@ -15,6 +19,7 @@ namespace QuadTreeCollisions.Core.Structures
         {
             Capacity = capacity;
             rectangle = boundary;
+            treeCollider = new RectangleCollider(rectangle, false); 
 
             if (!setupOnce)
             {
@@ -29,7 +34,7 @@ namespace QuadTreeCollisions.Core.Structures
 
         public void clear()
         {
-            worldObjects.Clear();
+            colliders.Clear();
 
             if (NW != null)
             {
@@ -38,41 +43,52 @@ namespace QuadTreeCollisions.Core.Structures
                 SW.clear();
                 SE.clear();
 
-
-                pool.Add(NW);
+                quadTreePool.Add(NW);
                 NW = null;
 
-                pool.Add(NE);
+                quadTreePool.Add(NE);
                 NE = null;
 
-                pool.Add(SW);
+                quadTreePool.Add(SW);
                 SW = null;
 
-                pool.Add(SE);
+                quadTreePool.Add(SE);
                 SE = null;
             }
         }
 
-        public bool insert(WorldObject worldObject)
+        public bool insert(Collider otherCollider)
         {
-            if (!rectangle.Intersects(worldObject.rectangle))
+            if (!treeCollider.Intersects(otherCollider))
             {
                 return false;
             }
 
             if (!isLeaf())
             {
-                return insertIntoSubtrees(worldObject);
+                return insertIntoSubtrees(otherCollider);
             }
 
-            if (worldObjects.Count < Capacity || depth == maxDepth)
+            if (colliders.Count < Capacity || depth == maxDepth)
             {
-                worldObjects.Add(worldObject);
+                colliders.Add(otherCollider);
                 return true;
             }
 
             subdivide();
-            return insertIntoSubtrees(worldObject);
+            return insertIntoSubtrees(otherCollider);
+        }
+
+        public IList<Collision> Collisions()
+        {
+            foreach (Collision collision in collisions)
+            {
+                collisionPool.Add(collision);
+            }
+
+            collisions.Clear();
+            findIntersectionsHelper(collisions);
+            return collisions;
         }
 
         public void Draw(RenderWindow window) 
@@ -93,31 +109,45 @@ namespace QuadTreeCollisions.Core.Structures
             }
         }
 
-        public IList<WorldObject> findIntersections(Rectangle rectangle)
+        private void findIntersectionsHelper(IList<Collision> collisions)
         {
-            intersections.Clear();
-            findIntersectionsHelper(intersections, rectangle);
-            return intersections;
-        }
-
-        private void findIntersectionsHelper(IList<WorldObject> intersections, Rectangle rectangle)
-        {
-            if (NW != null)
+            if (!isLeaf())
             {
-                NW.findIntersectionsHelper(intersections, rectangle);
-                NE.findIntersectionsHelper(intersections, rectangle);
-                SW.findIntersectionsHelper(intersections, rectangle);
-                SE.findIntersectionsHelper(intersections, rectangle);
+                NW.findIntersectionsHelper(collisions);
+                NE.findIntersectionsHelper(collisions);
+                SW.findIntersectionsHelper(collisions);
+                SE.findIntersectionsHelper(collisions);
                 return;
             }
 
-            foreach (WorldObject contained in worldObjects)
+            foreach (Collider colliderOne in colliders)
             {
-                if (rectangle == contained.rectangle)
-                    continue;
+                foreach (Collider colliderTwo in colliders)
+                {
+                    if (colliderOne == colliderTwo)
+                    {
+                        continue;
+                    }
 
-                if (rectangle.Intersects(contained.rectangle))
-                    intersections.Add(contained);
+                    if (colliderOne.Intersects(colliderTwo))
+                    {
+                        Collision? collision = null;
+                        if (collisionPool.Available())
+                        {
+                            collision = collisionPool.Get();
+                        }
+                        else
+                        {
+                            Console.WriteLine("New collider");
+                            collision = new Collision();
+                        }
+
+                        Collision collisionVal = collision.Value;
+                        collisionVal.One = colliderOne;
+                        collisionVal.Two = colliderTwo;
+                        collisions.Add(collisionVal);
+                    }
+                }
             }
         }
 
@@ -126,12 +156,12 @@ namespace QuadTreeCollisions.Core.Structures
             return NW == null;
         }
 
-        private bool insertIntoSubtrees(WorldObject worldObject)
+        private bool insertIntoSubtrees(Collider collider)
         {
-            bool insertedNW = NW.insert(worldObject);
-            bool insertedNE = NE.insert(worldObject);
-            bool insertedSW = SW.insert(worldObject);
-            bool insertedSE = SE.insert(worldObject);
+            bool insertedNW = NW.insert(collider);
+            bool insertedNE = NE.insert(collider);
+            bool insertedSW = SW.insert(collider);
+            bool insertedSE = SE.insert(collider);
 
             return insertedNW || insertedNE || insertedSW || insertedSE;
         }
@@ -143,9 +173,9 @@ namespace QuadTreeCollisions.Core.Structures
             float w = rectangle.Dimensions.X;
             float h = rectangle.Dimensions.Y;
 
-            if (pool.Available())
+            if (quadTreePool.Available())
             {
-                NW = pool.Get();
+                NW = quadTreePool.Get();
                 NW.rectangle.Position = new Vector2f(x, y);
                 NW.rectangle.Dimensions = new Vector2f(w / 2, h / 2);
                 NW.Capacity = Capacity;
@@ -156,9 +186,9 @@ namespace QuadTreeCollisions.Core.Structures
                 NW = new QuadTree(new Rectangle(new Vector2f(x, y), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
             }
 
-            if (pool.Available())
+            if (quadTreePool.Available())
             {
-                NE = pool.Get();
+                NE = quadTreePool.Get();
                 NE.rectangle.Position = new Vector2f(x + (w / 2), y);
                 NE.rectangle.Dimensions = new Vector2f(w / 2, h / 2);
                 NE.Capacity = Capacity;
@@ -169,9 +199,9 @@ namespace QuadTreeCollisions.Core.Structures
                 NE = new QuadTree(new Rectangle(new Vector2f(x + (w / 2), y), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
             }
 
-            if (pool.Available())
+            if (quadTreePool.Available())
             {
-                SW = pool.Get();
+                SW = quadTreePool.Get();
                 SW.rectangle.Position = new Vector2f(x, y + (h / 2));
                 SW.rectangle.Dimensions = new Vector2f(w / 2, h / 2);
                 SW.Capacity = Capacity;
@@ -179,12 +209,12 @@ namespace QuadTreeCollisions.Core.Structures
             }
             else
             {
-                SW = new QuadTree(new Rectangle(new Vector2f(x, y + (h/2)), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
+                SW = new QuadTree(new Rectangle(new Vector2f(x, y + (h / 2)), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
             }
 
-            if (pool.Available())
+            if (quadTreePool.Available())
             {
-                SE = pool.Get();
+                SE = quadTreePool.Get();
                 SE.rectangle.Position = new Vector2f(x + (w / 2), y + (h / 2));
                 SE.rectangle.Dimensions = new Vector2f(w / 2, h / 2);
                 SE.Capacity = Capacity;
@@ -195,27 +225,31 @@ namespace QuadTreeCollisions.Core.Structures
                 SE = new QuadTree(new Rectangle(new Vector2f(x + (w / 2), y + (h / 2)), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
             }
 
-            foreach (WorldObject worldObject in worldObjects)
+            foreach (Collider collider in colliders)
             {
-                NW.insert(worldObject);
-                NE.insert(worldObject);
-                SW.insert(worldObject);
-                SE.insert(worldObject);
+                NW.insert(collider);
+                NE.insert(collider);
+                SW.insert(collider);
+                SE.insert(collider);
             }
         }
 
         public Rectangle rectangle { get; private set; }
+        public RectangleCollider treeCollider;
+        
         public int Capacity { get; private set; }
         protected int depth = 0;
         private QuadTree? NW = null;
         private QuadTree? NE = null;
         private QuadTree? SW = null;
         private QuadTree? SE = null;
-        private IList<WorldObject> worldObjects = new List<WorldObject>();
-        private IList<WorldObject> intersections = new List<WorldObject>();
+
+        private IList<Collider> colliders = new List<Collider>();
+        private IList<Collision> collisions = new List<Collision>();
 
         private static RectangleShape shape = new RectangleShape();
-        private static CircularObjectPool<QuadTree> pool = new CircularObjectPool<QuadTree>();
+        private static CircularObjectPool<Collision> collisionPool = new CircularObjectPool<Collision>();
+        private static CircularObjectPool<QuadTree> quadTreePool = new CircularObjectPool<QuadTree>();
         private static bool render = true;
         private static bool setupOnce = false;
         private static int visualizationThickness = 1;

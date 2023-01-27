@@ -32,6 +32,8 @@ namespace QuadTreeCollisions.Core
                 FillColor = Color.Black,
                 Size = (SFML.System.Vector2f)registry.window.SIZE
             };
+
+            collisionSystem = new CollisionSystem();
         }
 
         public void Run()
@@ -50,6 +52,9 @@ namespace QuadTreeCollisions.Core
 
         private void Step()
         {
+            for (int i = 0; i < Registry.Instance.systems.Count; i++)
+                Registry.Instance.systems[i].Update(frameClock.ElapsedTime.AsSeconds());
+
             for (int i = 0; i < Registry.Instance.updateables.Count; i++)
                 Registry.Instance.updateables[i].Update(frameClock.ElapsedTime.AsSeconds());
         }
@@ -57,6 +62,10 @@ namespace QuadTreeCollisions.Core
         private void Render()
         {
             window.Draw(background);
+
+            for (int i = 0; i < Registry.Instance.systems.Count; i++)
+                Registry.Instance.systems[i].Draw(window);
+
             for (int i = 0; i < Registry.Instance.drawables.Count; i++)
                 Registry.Instance.drawables[i].Draw(window);
         }
@@ -94,5 +103,6 @@ namespace QuadTreeCollisions.Core
         private Registry registry;
         private RenderWindow window;
         private SFML.System.Clock frameClock = new SFML.System.Clock();
+        private CollisionSystem collisionSystem;
     }
 }

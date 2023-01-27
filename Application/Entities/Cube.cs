@@ -1,5 +1,6 @@
 ﻿using QuadTreeCollisions.Core;
 using QuadTreeCollisions.Core.Entities;
+using QuadTreeCollisions.Core.Physics.Colliders;
 using QuadTreeCollisions.Core.Structures;
 using SFML.Graphics;
 using SFML.System;
@@ -22,6 +23,9 @@ namespace QuadTreeCollisions.Application.Entities
                 FillColor = new Color((byte)random.Next(256), (byte)random.Next(256), (byte)random.Next(256), 255),
             };
 
+            rectCollider = new RectangleCollider(rectangle);
+            rectCollider.AttachedTo = this;
+
             float angle = random.Next(360);
             direction.X = (float)Math.Cos(angle * (180 / Math.PI));
             direction.Y = (float)Math.Sin(angle * (180 / Math.PI));
@@ -29,6 +33,12 @@ namespace QuadTreeCollisions.Application.Entities
             float totalDistance = Math.Abs(direction.X) + Math.Abs(direction.Y);
             direction.X = direction.X / totalDistance;
             direction.Y = direction.Y / totalDistance;
+        }
+
+        public override void Destroy()
+        {
+            base.Destroy();
+            rectCollider.Destroy();
         }
 
         public override void Draw(RenderWindow window) 
@@ -83,6 +93,7 @@ namespace QuadTreeCollisions.Application.Entities
             rectangle.Position += toMove;
         }
 
+        private RectangleCollider rectCollider;
         private RectangleShape shape;
         private Random random = new Random();
         private uint speed = 100;

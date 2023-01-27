@@ -1,11 +1,12 @@
-﻿using SFML.System;
+﻿using QuadTreeCollisions.Core.Interfaces;
+using SFML.System;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QuadTreeCollisions.Core
+namespace QuadTreeCollisions.Core.Math
 {
     public class Rectangle
     {

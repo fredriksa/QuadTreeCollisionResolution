@@ -1,4 +1,6 @@
-﻿namespace QuadTreeCollisions.Core.Entities
+﻿using QuadTreeCollisions.Core.Math;
+
+namespace QuadTreeCollisions.Core.Entities
 {
     public class WorldObject
     {

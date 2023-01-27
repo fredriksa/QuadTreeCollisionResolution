@@ -1,4 +1,5 @@
 ﻿using QuadTreeCollisions.Core.Interfaces;
+using QuadTreeCollisions.Core.Physics.Colliders;
 using SFML.Graphics;
 
 namespace QuadTreeCollisions.Core.Entities
@@ -16,7 +17,12 @@ namespace QuadTreeCollisions.Core.Entities
             Destroy();
         }
 
-        public void Destroy()
+        public virtual void OnCollide(Collider other)
+        {
+            Destroy();
+        }
+
+        public virtual void Destroy()
         {
             Registry.Instance.drawables.Remove(this);
             Registry.Instance.updateables.Remove(this);
