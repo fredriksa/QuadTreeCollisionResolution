@@ -83,7 +83,7 @@ namespace QuadTreeCollisions.Application
             }
             else if (e.Button == SFML.Window.Mouse.Button.Right)
             {
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 100; i++)
                 {
                     Cube cube = new Cube();
                     cube.rectangle.Position = Registry.Instance.mouse.lastPosition - (dimensions / 2);
