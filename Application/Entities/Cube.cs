@@ -39,6 +39,8 @@ namespace QuadTreeCollisions.Application.Entities
         {
             base.Destroy();
             rectCollider.Destroy();
+
+            new Explosion(this.rectangle.Position);
         }
 
         public override void Draw(RenderWindow window) 

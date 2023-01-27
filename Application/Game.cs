@@ -41,31 +41,6 @@ namespace QuadTreeCollisions.Application
                 Registry.Instance.window.WINDOW.SetTitle($"QuadTreeCollisions {(int)(1 / deltaTimeSeconds)} FPS {Registry.Instance.updateables.Count}");
                 titleUpdateTimer.Restart();
             }
-
-            /*tree.clear();
-            for (int i = 0; i < cubes.Count; i++)
-            {
-                Cube cube = cubes[i];
-                tree.insert(cube);
-            }*/
-
-            //Rectangle rect = new Rectangle(new Vector2f(0, 0), new Vector2f(0, 0));
-
-            //destroyedCubes.Clear();
-            /*foreach (Cube cube in cubes)
-            {
-                IList<WorldObject> intersectedWith = tree.findIntersections(cube.rectangle);
-                foreach (WorldObject worldObject in intersectedWith)
-                    destroyedCubes.Add(worldObject);
-            }*/
-
-           /* foreach (Cube cube in destroyedCubes)
-            {
-                new Explosion(cube.rectangle.Position);
-                cubes.Remove(cube);
-                Registry.Instance.updateables.Remove(cube);
-                Registry.Instance.drawables.Remove(cube);
-            }*/
         }
 
         public void Draw(RenderWindow window)
