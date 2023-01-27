@@ -1,6 +1,6 @@
 ﻿using SFML.Window;
 
-namespace QuadTreeCollisions.Core.Entities
+namespace QuadTreeCollisions.Core.Listeners
 {
     public class MouseButtonPressedEventListener
     {

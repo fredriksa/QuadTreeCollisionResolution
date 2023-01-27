@@ -1,4 +1,5 @@
 ﻿using QuadTreeCollisions.Core;
+using QuadTreeCollisions.Core.Entities;
 using SFML.Graphics;
 using SFML.System;
 using System.Transactions;

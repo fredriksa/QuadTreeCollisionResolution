@@ -1,5 +1,6 @@
-﻿using QuadTreeCollisions.Core.Entities;
-using QuadTreeCollisions.Core.Interfaces;
+﻿using QuadTreeCollisions.Core.Interfaces;
+using QuadTreeCollisions.Core.Listeners;
+using QuadTreeCollisions.Core.Systems;
 
 namespace QuadTreeCollisions.Core
 {
@@ -10,7 +11,7 @@ namespace QuadTreeCollisions.Core
         private Registry() { }
 
         public Window window { get; set; }
-        public Mouse mouse { get; set; }
+        public MouseTracker mouse { get; set; }
         public InputTracker input { get; set; }
 
         public List<IDrawable> drawables { get; private set; } = new List<IDrawable>();

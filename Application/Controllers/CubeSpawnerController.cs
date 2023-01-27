@@ -1,6 +1,6 @@
 ﻿using QuadTreeCollisions.Application.Entities;
 using QuadTreeCollisions.Core;
-using QuadTreeCollisions.Core.Entities;
+using QuadTreeCollisions.Core.Listeners;
 using SFML.System;
 using SFML.Window;
 

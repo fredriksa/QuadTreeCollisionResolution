@@ -1,7 +1,7 @@
-﻿using QuadTreeCollisions.Core.Entities;
-using QuadTreeCollisions.Core.Interfaces;
-using SFML.Graphics;
+﻿using SFML.Graphics;
 using SFML.Window;
+using QuadTreeCollisions.Core.Systems;
+using Mouse = QuadTreeCollisions.Core.Systems.MouseTracker;
 
 namespace QuadTreeCollisions.Core
 {
@@ -69,25 +69,25 @@ namespace QuadTreeCollisions.Core
 
         private void KeyReleased(object? sender, SFML.Window.KeyEventArgs e)
         { 
-            for (int i = 0; i<Registry.Instance.keyboardEventListeners.Count; i++)
+            for (int i = 0; i < Registry.Instance.keyboardEventListeners.Count; i++)
                 Registry.Instance.keyboardEventListeners[i].OnKeyReleased(e);
         }
         private void MouseMoved(object? sender, MouseMoveEventArgs e)
         {
-            foreach (MouseMovedEventListener listener in Registry.Instance.mouseMovedEventListeners)
-                listener.MouseMoved(e);
+            for (int i = 0; i < Registry.Instance.mouseMovedEventListeners.Count; i++)
+                Registry.Instance.mouseMovedEventListeners[i].MouseMoved(e);
         }
 
         private void MouseButtonReleased(object? sender, MouseButtonEventArgs e)
         {
-            foreach (MouseButtonPressedEventListener listener in Registry.Instance.mousePressedEventListeners)
-                listener.MouseButtonReleased(e);
+            for (int i = 0; i < Registry.Instance.mousePressedEventListeners.Count; i++)
+                Registry.Instance.mousePressedEventListeners[i].MouseButtonReleased(e);
         }
 
         private void MouseButtonPressed(object? sender, MouseButtonEventArgs e)
         {
-            foreach (MouseButtonPressedEventListener listener in Registry.Instance.mousePressedEventListeners)
-                listener.MouseButtonPressed(e);
+            for (int i = 0; i < Registry.Instance.mousePressedEventListeners.Count; i++)
+                Registry.Instance.mousePressedEventListeners[i].MouseButtonPressed(e);
         }
 
         private RectangleShape background;

@@ -1,5 +1,5 @@
 ﻿using QuadTreeCollisions.Core;
-using QuadTreeCollisions.Core.Entities;
+using QuadTreeCollisions.Core.Listeners;
 using System;
 using System.Collections.Generic;
 using System.Linq;

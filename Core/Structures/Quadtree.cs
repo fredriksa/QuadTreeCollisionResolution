@@ -1,16 +1,17 @@
-﻿using SFML.Graphics;
+﻿using QuadTreeCollisions.Core.Entities;
+using SFML.Graphics;
 using SFML.System;
 
 namespace QuadTreeCollisions.Core.Structures
 {
-    public class Quadtree 
+    public class QuadTree 
     {
         
         /**
          * Note: Collision resolution performance can be improved by tweaking capacity and max depth depending on
          *       the collision resolution cost.
          */
-        public Quadtree(Rectangle boundary, int capacity, int depth)
+        public QuadTree(Rectangle boundary, int capacity, int depth)
         {
             Capacity = capacity;
             rectangle = boundary;
@@ -38,16 +39,16 @@ namespace QuadTreeCollisions.Core.Structures
                 SE.clear();
 
 
-                pool.Enqueue(NW);
+                pool.Add(NW);
                 NW = null;
 
-                pool.Enqueue(NE);
+                pool.Add(NE);
                 NE = null;
 
-                pool.Enqueue(SW);
+                pool.Add(SW);
                 SW = null;
 
-                pool.Enqueue(SE);
+                pool.Add(SE);
                 SE = null;
             }
         }
@@ -144,7 +145,7 @@ namespace QuadTreeCollisions.Core.Structures
 
             if (pool.Available())
             {
-                NW = pool.Dequeue();
+                NW = pool.Get();
                 NW.rectangle.Position = new Vector2f(x, y);
                 NW.rectangle.Dimensions = new Vector2f(w / 2, h / 2);
                 NW.Capacity = Capacity;
@@ -152,12 +153,12 @@ namespace QuadTreeCollisions.Core.Structures
             }
             else
             {
-                NW = new Quadtree(new Rectangle(new Vector2f(x, y), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
+                NW = new QuadTree(new Rectangle(new Vector2f(x, y), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
             }
 
             if (pool.Available())
             {
-                NE = pool.Dequeue();
+                NE = pool.Get();
                 NE.rectangle.Position = new Vector2f(x + (w / 2), y);
                 NE.rectangle.Dimensions = new Vector2f(w / 2, h / 2);
                 NE.Capacity = Capacity;
@@ -165,12 +166,12 @@ namespace QuadTreeCollisions.Core.Structures
             }
             else
             {
-                NE = new Quadtree(new Rectangle(new Vector2f(x + (w / 2), y), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
+                NE = new QuadTree(new Rectangle(new Vector2f(x + (w / 2), y), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
             }
 
             if (pool.Available())
             {
-                SW = pool.Dequeue();
+                SW = pool.Get();
                 SW.rectangle.Position = new Vector2f(x, y + (h / 2));
                 SW.rectangle.Dimensions = new Vector2f(w / 2, h / 2);
                 SW.Capacity = Capacity;
@@ -178,12 +179,12 @@ namespace QuadTreeCollisions.Core.Structures
             }
             else
             {
-                SW = new Quadtree(new Rectangle(new Vector2f(x, y + (h/2)), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
+                SW = new QuadTree(new Rectangle(new Vector2f(x, y + (h/2)), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
             }
 
             if (pool.Available())
             {
-                SE = pool.Dequeue();
+                SE = pool.Get();
                 SE.rectangle.Position = new Vector2f(x + (w / 2), y + (h / 2));
                 SE.rectangle.Dimensions = new Vector2f(w / 2, h / 2);
                 SE.Capacity = Capacity;
@@ -191,7 +192,7 @@ namespace QuadTreeCollisions.Core.Structures
             }
             else
             {
-                SE = new Quadtree(new Rectangle(new Vector2f(x + (w / 2), y + (h / 2)), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
+                SE = new QuadTree(new Rectangle(new Vector2f(x + (w / 2), y + (h / 2)), new Vector2f(w / 2, h / 2)), Capacity, depth + 1);
             }
 
             foreach (WorldObject worldObject in worldObjects)
@@ -206,15 +207,15 @@ namespace QuadTreeCollisions.Core.Structures
         public Rectangle rectangle { get; private set; }
         public int Capacity { get; private set; }
         protected int depth = 0;
-        private Quadtree? NW = null;
-        private Quadtree? NE = null;
-        private Quadtree? SW = null;
-        private Quadtree? SE = null;
+        private QuadTree? NW = null;
+        private QuadTree? NE = null;
+        private QuadTree? SW = null;
+        private QuadTree? SE = null;
         private IList<WorldObject> worldObjects = new List<WorldObject>();
         private IList<WorldObject> intersections = new List<WorldObject>();
 
         private static RectangleShape shape = new RectangleShape();
-        private static QuadTreePool pool = new QuadTreePool();
+        private static CircularObjectPool<QuadTree> pool = new CircularObjectPool<QuadTree>();
         private static bool render = true;
         private static bool setupOnce = false;
         private static int visualizationThickness = 1;

@@ -1,6 +1,6 @@
-﻿using QuadTreeCollisions.Core.Entities;
+﻿using QuadTreeCollisions.Core.Listeners;
 
-namespace QuadTreeCollisions.Core
+namespace QuadTreeCollisions.Core.Systems
 {
     public class InputTracker : KeyboardeventListener
     {
@@ -9,12 +9,12 @@ namespace QuadTreeCollisions.Core
             return keyToPressed.GetValueOrDefault(key, false);
         }
 
-        public override void OnKeyPressed(SFML.Window.KeyEventArgs e) 
+        public override void OnKeyPressed(SFML.Window.KeyEventArgs e)
         {
             keyToPressed[e.Code] = true;
         }
-        
-        public override void OnKeyReleased(SFML.Window.KeyEventArgs e) 
+
+        public override void OnKeyReleased(SFML.Window.KeyEventArgs e)
         {
             keyToPressed[e.Code] = false;
         }

@@ -1,7 +1,7 @@
 ﻿using QuadTreeCollisions.Core.Interfaces;
 using SFML.Graphics;
 
-namespace QuadTreeCollisions.Core
+namespace QuadTreeCollisions.Core.Entities
 {
     public class Entity : WorldObject, IDrawable, IUpdateable
     {
@@ -12,6 +12,11 @@ namespace QuadTreeCollisions.Core
         }
 
         ~Entity()
+        {
+            Destroy();
+        }
+
+        public void Destroy()
         {
             Registry.Instance.drawables.Remove(this);
             Registry.Instance.updateables.Remove(this);

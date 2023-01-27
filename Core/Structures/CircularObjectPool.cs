@@ -6,23 +6,25 @@ using System.Threading.Tasks;
 
 namespace QuadTreeCollisions.Core.Structures
 {
-    public class QuadTreePool
+    public class CircularObjectPool<T>
     {
         public bool Available()
         {
             return available.Count > 0;
         }
 
-        public Quadtree Dequeue()
+        public T Get()
         {
-            return available.Dequeue();
+            T last = available.Last();
+            available.Remove(last);
+            return last;
         }
 
-        public void Enqueue(Quadtree tree)
+        public void Add(T tree)
         {
-            available.Enqueue(tree);
+            available.Add(tree);
         }
 
-        private Queue<Quadtree> available = new Queue<Quadtree>();
+        private List<T> available = new List<T>();
     };
 }

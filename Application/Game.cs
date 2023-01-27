@@ -3,6 +3,7 @@ using QuadTreeCollisions.Application.Entities;
 using QuadTreeCollisions.Core;
 using QuadTreeCollisions.Core.Entities;
 using QuadTreeCollisions.Core.Interfaces;
+using QuadTreeCollisions.Core.Listeners;
 using QuadTreeCollisions.Core.Structures;
 using SFML.Graphics;
 using SFML.System;
@@ -12,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using QuadTreeCollisions.Core.Structures;
 
 namespace QuadTreeCollisions.Application
 {
@@ -24,7 +26,7 @@ namespace QuadTreeCollisions.Application
             wave = new Wave();
 
             Rectangle treeRect = new Rectangle(new Vector2f(0, 0), (Vector2f)Registry.Instance.window.SIZE);
-            tree = new Quadtree(treeRect, 2, 0);
+            tree = new QuadTree(treeRect, 2, 0);
 
             Registry.Instance.updateables.Add(this);
             Registry.Instance.drawables.Add(this);
@@ -103,7 +105,7 @@ namespace QuadTreeCollisions.Application
         private WindowController? windowController;
         private CubeSpawnerController? cubeSpawnerController;
         private Wave? wave;
-        private Quadtree? tree;
+        private QuadTree? tree;
         private Clock titleUpdateTimer = new Clock();
     }
 }

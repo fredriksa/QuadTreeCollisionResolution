@@ -1,4 +1,4 @@
-﻿namespace QuadTreeCollisions.Core.Entities
+﻿namespace QuadTreeCollisions.Core.Listeners
 {
     public class KeyboardeventListener
     {
