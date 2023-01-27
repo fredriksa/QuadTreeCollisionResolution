@@ -131,7 +131,7 @@ namespace QuadTreeCollisions.Core.Structures
 
                     if (colliderOne.Intersects(colliderTwo))
                     {
-                        Collision? collision = null;
+                        Collision collision = null;
                         if (collisionPool.Available())
                         {
                             collision = collisionPool.Get();
@@ -142,10 +142,9 @@ namespace QuadTreeCollisions.Core.Structures
                             collision = new Collision();
                         }
 
-                        Collision collisionVal = collision.Value;
-                        collisionVal.One = colliderOne;
-                        collisionVal.Two = colliderTwo;
-                        collisions.Add(collisionVal);
+                        collision.One = colliderOne;
+                        collision.Two = colliderTwo;
+                        collisions.Add(collision);
                     }
                 }
             }

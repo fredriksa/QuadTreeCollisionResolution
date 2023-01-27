@@ -38,7 +38,7 @@ namespace QuadTreeCollisions.Application
         {
             if (titleUpdateTimer.ElapsedTime.AsSeconds() > 1)
             {
-                Registry.Instance.window.WINDOW.SetTitle($"QuadTreeCollisions {(int)(1 / deltaTimeSeconds)} FPS");
+                Registry.Instance.window.WINDOW.SetTitle($"QuadTreeCollisions {(int)(1 / deltaTimeSeconds)} FPS {Registry.Instance.updateables.Count}");
                 titleUpdateTimer.Restart();
             }
 
@@ -82,7 +82,6 @@ namespace QuadTreeCollisions.Application
                 Cube cube = new Cube();
                 cube.rectangle.Dimensions = dimensions;
                 cube.rectangle.Position = Registry.Instance.mouse.lastPosition - (dimensions / 2);
-                cubes.Add(cube);
             }
             else if (e.Button == SFML.Window.Mouse.Button.Right)
             {
@@ -92,14 +91,12 @@ namespace QuadTreeCollisions.Application
                     cube.rectangle.Position = Registry.Instance.mouse.lastPosition - (dimensions / 2);
                     cube.rectangle.Position = new Vector2f(cube.rectangle.Position.X + random.Next(-100, 100), cube.rectangle.Position.Y + random.Next(-100, 100));
                     cube.rectangle.Dimensions = dimensions;
-                    cubes.Add(cube);
                 }
             }
         }
 
         private Random random = new Random();
 
-        private IList<Cube> cubes = new List<Cube>(100);
         private HashSet<WorldObject> destroyedCubes = new HashSet<WorldObject>();
         
 
